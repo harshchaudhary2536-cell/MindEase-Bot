@@ -1,65 +1,91 @@
 export default async function handler(req, res) {
+  console.log("🔥 HF API HIT");
+
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ error: "Only POST allowed" });
     }
 
-    const API_KEY = process.env.GEMINI_API_KEY;
+    const HF_TOKEN = process.env.HUGGINGFACE_TOKEN;
 
-    if (!API_KEY) {
-      return res.status(500).json({ error: "API KEY NOT FOUND" });
+    console.log("🔑 TOKEN EXISTS:", !!HF_TOKEN);
+
+    if (!HF_TOKEN) {
+      return res.status(500).json({ error: "HUGGINGFACE TOKEN NOT FOUND" });
     }
 
     const { messages } = req.body;
 
+    console.log("📩 Messages:", messages);
+
     const userText =
       messages?.[messages.length - 1]?.parts?.[0]?.text || "Hello";
 
+    console.log("🧠 User Text:", userText);
+
+    const prompt = `You are MindEase, a funny chill best friend.
+- Keep replies short
+- Casual tone
+- Comfort + joke if sad
+
+User: ${userText}
+MindEase:`;
+
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent",
+      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": API_KEY
+          Authorization: `Bearer ${HF_TOKEN}`,
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: userText }]
-            }
-          ]
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: 120,
+            temperature: 0.7,
+            return_full_text: false
+          }
         })
       }
     );
 
-    const text = await response.text();
+    console.log("📡 HF Status:", response.status);
+
+    const raw = await response.text();
+
+    console.log("📦 RAW RESPONSE:", raw);
 
     let data;
     try {
-      data = JSON.parse(text);
+      data = JSON.parse(raw);
     } catch {
       return res.status(500).json({
-        error: "INVALID JSON",
-        raw: text
+        error: "INVALID JSON FROM HF",
+        raw: raw
       });
     }
 
     if (!response.ok) {
       return res.status(500).json({
-        error: data.error?.message || "Gemini error"
+        error: data.error || "HF error",
+        full: data
       });
     }
 
-    const reply =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No reply 😭";
+    const reply = Array.isArray(data)
+      ? data[0]?.generated_text
+      : data.generated_text;
 
-    return res.status(200).json({ reply });
+    return res.status(200).json({
+      reply: reply || "No response 😭"
+    });
 
   } catch (err) {
+    console.log("💥 SERVER CRASH:", err);
+
     return res.status(500).json({
-      error: "SERVER CRASH",
+      error: "SERVER ERROR",
       details: err.message
     });
   }
