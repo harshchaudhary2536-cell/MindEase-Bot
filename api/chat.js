@@ -10,29 +10,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = req.body;
+    const { messages } = req.body;
 
-    const prompt = `You are MindEase, a funny and chill best friend.
+    const system = `You are MindEase, a funny chill best friend.
+- Short replies
+- Casual tone
+- Comfort + joke if sad`;
 
-Rules:
-- Keep replies short (1-2 lines)
-- Use casual English like WhatsApp
-- If user is sad → comfort + small joke
-- Never sound like AI or therapist
-
-User: ${message}
-MindEase:`;
+    const contents = [
+      { role: "user", parts: [{ text: system }] },
+      ...messages
+    ];
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents })
       }
     );
 
@@ -44,11 +39,11 @@ MindEase:`;
 
     const reply =
       data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Brain freeze ho gaya 😭 try again";
+      "Bro lag ho gaya 😭";
 
-    return res.status(200).json({ reply });
+    res.status(200).json({ reply });
 
-  } catch (err) {
-    return res.status(500).json({ error: "Server crash 😵" });
+  } catch {
+    res.status(500).json({ error: "Server error" });
   }
 }
