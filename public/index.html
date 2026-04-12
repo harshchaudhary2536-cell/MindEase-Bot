@@ -24,7 +24,6 @@ body {
   display:flex;
   flex-direction:column;
   border-radius:20px;
-  overflow:hidden;
 }
 
 #chat {
@@ -46,7 +45,7 @@ body {
 
 .bot {
   background:#020617;
-  white-space: pre-wrap; /* IMPORTANT for debug JSON */
+  white-space:pre-wrap;
 }
 
 .input-area {
@@ -57,14 +56,10 @@ input {
   flex:1;
   padding:10px;
   border:none;
-  outline:none;
 }
 
 button {
   width:60px;
-  border:none;
-  background:#00f2ff;
-  cursor:pointer;
 }
 </style>
 </head>
@@ -73,7 +68,7 @@ button {
 
 <div id="app">
   <div id="chat">
-    <div class="msg bot">Debug mode ON 🧠</div>
+    <div class="msg bot">HF Debug Mode 🧠</div>
   </div>
 
   <div class="input-area">
@@ -115,15 +110,12 @@ async function send() {
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: {"Content-Type":"application/json"},
       body: JSON.stringify({ messages })
     });
 
     const data = await res.json();
 
-    // 🔥 DEBUG SHOW EVERYTHING
     if (!res.ok) {
       addMsg("⚠️ ERROR:\n" + JSON.stringify(data, null, 2), "bot");
       return;
@@ -136,9 +128,8 @@ async function send() {
   }
 }
 
-// ENTER KEY SUPPORT
-document.getElementById("input").addEventListener("keypress", function(e){
-  if (e.key === "Enter") send();
+document.getElementById("input").addEventListener("keypress", e=>{
+  if(e.key==="Enter") send();
 });
 </script>
 
