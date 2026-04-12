@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MindEase AI</title>
+<title>MindEase Neon ⚡</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Inter&display=swap" rel="stylesheet">
 
 <style>
 * { box-sizing: border-box; }
@@ -13,7 +13,7 @@
 body {
   margin:0;
   font-family:'Inter', sans-serif;
-  background:#343541;
+  background: radial-gradient(circle at top, #0f172a, #020617);
   color:white;
   display:flex;
   height:100vh;
@@ -22,25 +22,31 @@ body {
 /* Sidebar */
 .sidebar {
   width:260px;
-  background:#202123;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(15px);
+  border-right:1px solid rgba(0,255,255,0.2);
   padding:15px;
 }
 
 .sidebar h2 {
-  font-size:16px;
-  margin-bottom:20px;
+  font-family:'Orbitron';
+  color:#00f2ff;
+  text-shadow:0 0 10px #00f2ff, 0 0 20px #7000ff;
 }
 
 .new-chat {
+  margin-top:20px;
   padding:10px;
-  border:1px solid #444;
-  border-radius:8px;
-  cursor:pointer;
+  border:1px solid #00f2ff;
+  border-radius:10px;
   text-align:center;
+  cursor:pointer;
+  transition:0.3s;
 }
 
 .new-chat:hover {
-  background:#2a2b32;
+  background:rgba(0,242,255,0.1);
+  box-shadow:0 0 10px #00f2ff;
 }
 
 /* Main */
@@ -60,58 +66,74 @@ body {
   gap:12px;
 }
 
+/* Messages */
 .msg {
   max-width:70%;
   padding:12px 15px;
-  border-radius:10px;
-  line-height:1.4;
+  border-radius:12px;
+  animation:fade 0.3s ease;
 }
 
 .user {
-  background:#444654;
   align-self:flex-end;
+  background:#1e293b;
 }
 
 .bot {
-  background:#3e3f4b;
   align-self:flex-start;
+  background:rgba(0,242,255,0.05);
+  border:1px solid rgba(0,242,255,0.3);
+  box-shadow:0 0 10px rgba(0,242,255,0.2);
+}
+
+@keyframes fade {
+  from {opacity:0; transform:translateY(10px);}
+  to {opacity:1; transform:translateY(0);}
 }
 
 /* Typing */
 .typing {
   font-size:12px;
-  opacity:0.7;
+  color:#00f2ff;
+  text-shadow:0 0 5px #00f2ff;
 }
 
 /* Input */
 .input-area {
   display:flex;
   padding:15px;
-  background:#40414f;
+  background:rgba(0,0,0,0.5);
+  backdrop-filter:blur(10px);
 }
 
 input {
   flex:1;
   padding:12px;
-  border-radius:8px;
-  border:none;
-  outline:none;
-  background:#343541;
+  border-radius:10px;
+  border:1px solid rgba(0,255,255,0.3);
+  background:#020617;
   color:white;
+  outline:none;
 }
 
+input:focus {
+  box-shadow:0 0 10px #00f2ff;
+}
+
+/* Button */
 button {
   margin-left:10px;
   padding:12px 18px;
   border:none;
-  border-radius:8px;
-  background:#19c37d;
+  border-radius:10px;
+  background:linear-gradient(45deg,#00f2ff,#7000ff);
   color:white;
   cursor:pointer;
+  transition:0.3s;
 }
 
 button:hover {
-  opacity:0.9;
+  box-shadow:0 0 15px #00f2ff;
 }
 </style>
 </head>
@@ -126,12 +148,12 @@ button:hover {
 <div class="main">
 
   <div id="chat">
-    <div class="msg bot">Hey bro 😎 what's going on?</div>
+    <div class="msg bot">Yo bro 😎 welcome to neon world</div>
   </div>
 
   <div class="input-area">
-    <input id="input" placeholder="Send a message..." />
-    <button onclick="send()">Send</button>
+    <input id="input" placeholder="Say something..." />
+    <button onclick="send()">➤</button>
   </div>
 
 </div>
