@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MindEase Debug</title>
 
 <style>
 body {
   margin:0;
-  font-family:sans-serif;
   background:#0f172a;
   color:white;
+  font-family:sans-serif;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -28,8 +27,8 @@ body {
 
 #chat {
   flex:1;
+  overflow:auto;
   padding:10px;
-  overflow-y:auto;
 }
 
 .msg {
@@ -38,29 +37,11 @@ body {
   border-radius:10px;
 }
 
-.user {
-  background:#334155;
-  text-align:right;
-}
+.user { background:#334155; text-align:right; }
+.bot { background:#020617; white-space:pre-wrap; }
 
-.bot {
-  background:#020617;
-  white-space:pre-wrap;
-}
-
-.input-area {
-  display:flex;
-}
-
-input {
-  flex:1;
-  padding:10px;
-  border:none;
-}
-
-button {
-  width:60px;
-}
+input { flex:1; padding:10px; }
+button { width:60px; }
 </style>
 </head>
 
@@ -68,10 +49,10 @@ button {
 
 <div id="app">
   <div id="chat">
-    <div class="msg bot">HF Debug Mode 🧠</div>
+    <div class="msg bot">Debug Mode ON 🧠</div>
   </div>
 
-  <div class="input-area">
+  <div style="display:flex;">
     <input id="input" placeholder="Type..." />
     <button onclick="send()">➤</button>
   </div>
