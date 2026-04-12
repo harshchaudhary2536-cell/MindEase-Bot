@@ -1,4 +1,6 @@
 export default async function handler(req, res) {
+  console.log("🔥 API HIT");
+
   try {
     if (req.method !== "POST") {
       return res.status(405).json({ error: "Only POST allowed" });
@@ -6,25 +8,23 @@ export default async function handler(req, res) {
 
     const API_KEY = process.env.GEMINI_API_KEY;
 
+    console.log("🔑 API KEY EXISTS:", !!API_KEY);
+
     if (!API_KEY) {
       return res.status(500).json({ error: "API KEY NOT FOUND" });
     }
 
     const { messages } = req.body;
 
+    console.log("📩 Incoming messages:", messages);
+
     const userText =
       messages?.[messages.length - 1]?.parts?.[0]?.text || "Hello";
 
-    const prompt = `You are MindEase, a funny chill best friend.
-- Short replies
-- Casual tone
-- Comfort + joke if sad
-
-User: ${userText}
-MindEase:`;
+    console.log("🧠 User Text:", userText);
 
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent",
       {
         method: "POST",
         headers: {
@@ -34,40 +34,47 @@ MindEase:`;
         body: JSON.stringify({
           contents: [
             {
-              parts: [{ text: prompt }]
+              parts: [{ text: userText }]
             }
           ]
         })
       }
     );
 
-    const text = await response.text();
+    console.log("📡 Gemini Status:", response.status);
+
+    const rawText = await response.text();
+
+    console.log("📦 Raw Gemini Response:", rawText);
 
     let data;
     try {
-      data = JSON.parse(text);
+      data = JSON.parse(rawText);
     } catch {
       return res.status(500).json({
-        error: "Invalid response from Gemini",
-        raw: text
+        error: "INVALID JSON FROM GEMINI",
+        raw: rawText
       });
     }
 
     if (!response.ok) {
       return res.status(500).json({
-        error: data.error?.message || "Gemini error"
+        error: data.error?.message || "Gemini error",
+        full: data
       });
     }
 
     const reply =
       data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Bro I forgot 😭";
+      "No reply 😭";
 
     return res.status(200).json({ reply });
 
   } catch (err) {
+    console.log("💥 SERVER CRASH:", err);
+
     return res.status(500).json({
-      error: "SERVER ERROR",
+      error: "SERVER CRASH",
       details: err.message
     });
   }
