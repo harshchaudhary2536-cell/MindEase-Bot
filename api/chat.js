@@ -4,10 +4,10 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: "Only POST allowed" });
     }
 
-    const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY;
+    const GROQ_KEY = process.env.GROQ_API_KEY;
 
-    if (!OPENROUTER_KEY) {
-      return res.status(500).json({ error: "OPENROUTER KEY NOT FOUND" });
+    if (!GROQ_KEY) {
+      return res.status(500).json({ error: "GROQ KEY NOT FOUND" });
     }
 
     const { messages } = req.body;
@@ -15,24 +15,23 @@ export default async function handler(req, res) {
     const userText =
       messages?.[messages.length - 1]?.parts?.[0]?.text || "Hello";
 
-    const prompt = `You are MindEase, a funny chill best friend.
-- Keep replies short
-- Use casual tone
-- If user is sad → comfort + light joke
-
-User: ${userText}
-MindEase:`;
-
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENROUTER_KEY}`,
+        "Authorization": `Bearer ${GROQ_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "openrouter/auto",
+        model: "llama3-8b-8192",
         messages: [
-          { role: "user", content: prompt }
+          {
+            role: "system",
+            content: "You are MindEase, a funny chill best friend. Keep replies short, casual and supportive."
+          },
+          {
+            role: "user",
+            content: userText
+          }
         ]
       })
     });
@@ -41,7 +40,7 @@ MindEase:`;
 
     if (!response.ok) {
       return res.status(500).json({
-        error: data.error?.message || "OpenRouter error"
+        error: data.error?.message || "Groq error"
       });
     }
 
