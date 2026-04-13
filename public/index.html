@@ -57,16 +57,6 @@ body{
   align-items:center;
 }
 
-/* AVATAR */
-#avatar{
-  width:60px;
-  height:60px;
-  border-radius:50%;
-  margin:10px;
-  background:radial-gradient(circle,#00f2ff,#7000ff);
-  box-shadow:0 0 20px #00f2ff;
-}
-
 /* CHAT */
 #chat{
   flex:1;
@@ -144,16 +134,15 @@ button{
 <div class="sidebar">
   <h2 id="title">MindEase ⚡</h2>
 
-  <button id="chillBtn" onclick="setMode('chill')">😌 Chill</button>
-  <button id="funnyBtn" onclick="setMode('funny')">😂 Funny</button>
-  <button id="savageBtn" onclick="setMode('savage')">😈 Savage</button>
+  <button onclick="setMode('chill')">😌 Chill</button>
+  <button onclick="setMode('funny')">😂 Funny</button>
+  <button onclick="setMode('savage')">😈 Savage</button>
 
+  <button onclick="toggleCall()">📞 Call Mode</button>
   <button onclick="toggleLang()">🌐 Language</button>
 </div>
 
 <div class="main">
-
-<div id="avatar"></div>
 
 <div id="chat">
   <div class="msg bot">Kya scene hai bro 😎</div>
@@ -162,7 +151,7 @@ button{
 <div class="input-area">
   <input id="input" placeholder="Type or speak..." />
   <button onclick="startVoice()">🎤</button>
-  <button onclick="stopVoice()">⏹️</button>
+  <button onclick="stopAll()">⏹️</button>
   <button onclick="send()">➤</button>
 </div>
 
@@ -173,6 +162,7 @@ let messages=[];
 let mode="chill";
 let recognition;
 let isListening=false;
+let callMode=false;
 let currentLang="en";
 
 // MENU
@@ -180,42 +170,51 @@ function toggleMenu(){
   document.querySelector(".sidebar").classList.toggle("active");
 }
 
+// MODE
 function setMode(m){mode=m;}
 
-// 🌐 LANGUAGE SWITCH
+// 🌐 LANGUAGE
 function toggleLang(){
-  currentLang = currentLang === "en" ? "hi" : "en";
+  currentLang = currentLang==="en" ? "hi" : "en";
   applyLang();
 }
 
 function applyLang(){
-
-  if(currentLang === "hi"){
-    document.getElementById("title").innerText="MindEase ⚡";
+  if(currentLang==="hi"){
     document.getElementById("input").placeholder="Yahan likho ya bolo...";
-    document.getElementById("chillBtn").innerText="😌 Shaant";
-    document.getElementById("funnyBtn").innerText="😂 Mazaak";
-    document.getElementById("savageBtn").innerText="😈 Teekha";
   } else {
-    document.getElementById("title").innerText="MindEase ⚡";
     document.getElementById("input").placeholder="Type or speak...";
-    document.getElementById("chillBtn").innerText="😌 Chill";
-    document.getElementById("funnyBtn").innerText="😂 Funny";
-    document.getElementById("savageBtn").innerText="😈 Savage";
+  }
+}
+applyLang();
+
+// 📞 CALL MODE
+function toggleCall(){
+  callMode = !callMode;
+  alert(callMode ? "Call Mode ON 📞" : "Call Mode OFF");
+
+  if(callMode){
+    startVoice();
   }
 }
 
-applyLang();
-
-// SPEAK
+// 🔊 SPEAK
 function speak(text){
   window.speechSynthesis.cancel();
+
   const speech=new SpeechSynthesisUtterance(text);
   speech.lang="en-IN";
+
+  speech.onend=()=>{
+    if(callMode){
+      startVoice(); // 🔁 continuous conversation
+    }
+  };
+
   window.speechSynthesis.speak(speech);
 }
 
-// VOICE INPUT
+// 🎤 VOICE INPUT
 function startVoice(){
   if(isListening) return;
 
@@ -231,11 +230,16 @@ function startVoice(){
     send();
   };
 
-  recognition.onend=()=>{isListening=false;};
+  recognition.onend=()=>{
+    isListening=false;
+  };
+
   recognition.start();
 }
 
-function stopVoice(){
+// ⏹️ STOP ALL
+function stopAll(){
+  callMode=false;
   window.speechSynthesis.cancel();
   if(recognition) recognition.stop();
 }
@@ -256,7 +260,7 @@ function typeEffect(el,text){
   typing();
 }
 
-// ADD MSG
+// ADD MESSAGE
 function addMsg(text,type){
   const chat=document.getElementById("chat");
 
