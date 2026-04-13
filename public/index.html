@@ -132,14 +132,21 @@ button{
 <button id="menuBtn" onclick="toggleMenu()">☰</button>
 
 <div class="sidebar">
-  <h2 id="title">MindEase ⚡</h2>
+  <h2>MindEase ⚡</h2>
 
   <button onclick="setMode('chill')">😌 Chill</button>
   <button onclick="setMode('funny')">😂 Funny</button>
   <button onclick="setMode('savage')">😈 Savage</button>
 
   <button onclick="toggleCall()">📞 Call Mode</button>
-  <button onclick="toggleLang()">🌐 Language</button>
+
+  <button onclick="toggleLang()">🌐 UI Language</button>
+
+  <button onclick="setVoice('female')">👩 Female Voice</button>
+  <button onclick="setVoice('male')">👨 Male Voice</button>
+
+  <button onclick="setTone('calm')">😌 Calm Tone</button>
+  <button onclick="setTone('fast')">⚡ Energetic</button>
 </div>
 
 <div class="main">
@@ -165,6 +172,9 @@ let isListening=false;
 let callMode=false;
 let currentLang="en";
 
+let voiceType="female";
+let tone="calm";
+
 // MENU
 function toggleMenu(){
   document.querySelector(".sidebar").classList.toggle("active");
@@ -173,42 +183,74 @@ function toggleMenu(){
 // MODE
 function setMode(m){mode=m;}
 
-// 🌐 LANGUAGE
+// UI LANGUAGE
 function toggleLang(){
   currentLang = currentLang==="en" ? "hi" : "en";
-  applyLang();
+  document.getElementById("input").placeholder =
+    currentLang==="hi" ? "Yahan likho ya bolo..." : "Type or speak...";
 }
 
-function applyLang(){
-  if(currentLang==="hi"){
-    document.getElementById("input").placeholder="Yahan likho ya bolo...";
-  } else {
-    document.getElementById("input").placeholder="Type or speak...";
-  }
-}
-applyLang();
+// VOICE SETTINGS
+function setVoice(v){ voiceType=v; }
+function setTone(t){ tone=t; }
 
 // 📞 CALL MODE
 function toggleCall(){
-  callMode = !callMode;
+  callMode=!callMode;
   alert(callMode ? "Call Mode ON 📞" : "Call Mode OFF");
 
-  if(callMode){
-    startVoice();
-  }
+  if(callMode) startVoice();
 }
 
-// 🔊 SPEAK
+// 🧠 DETECT LANGUAGE
+function detectLang(text){
+  const hindi=/[\u0900-\u097F]/;
+  return hindi.test(text) ? "hi-IN" : "en-IN";
+}
+
+// 🎭 EMOTION DETECT
+function detectEmotion(text){
+  text=text.toLowerCase();
+
+  if(text.includes("sad")||text.includes("low")||text.includes("cry")) return "sad";
+  if(text.includes("angry")||text.includes("mad")) return "angry";
+  if(text.includes("happy")||text.includes("great")) return "happy";
+
+  return "normal";
+}
+
+// 🔊 SPEAK (ULTIMATE)
 function speak(text){
   window.speechSynthesis.cancel();
 
   const speech=new SpeechSynthesisUtterance(text);
-  speech.lang="en-IN";
+
+  // 🌐 language auto
+  speech.lang=detectLang(text);
+
+  // 🎭 emotion
+  const emotion=detectEmotion(text);
+
+  if(tone==="calm"){
+    speech.rate=0.9;
+  } else {
+    speech.rate=1.2;
+  }
+
+  if(emotion==="sad") speech.rate=0.8;
+  if(emotion==="happy") speech.rate=1.2;
+
+  // 👩‍🦰 voice selection
+  const voices=window.speechSynthesis.getVoices();
+
+  if(voiceType==="female"){
+    speech.voice = voices.find(v=>v.name.toLowerCase().includes("female")) || voices[0];
+  } else {
+    speech.voice = voices.find(v=>v.name.toLowerCase().includes("male")) || voices[1];
+  }
 
   speech.onend=()=>{
-    if(callMode){
-      startVoice(); // 🔁 continuous conversation
-    }
+    if(callMode) startVoice();
   };
 
   window.speechSynthesis.speak(speech);
@@ -230,37 +272,32 @@ function startVoice(){
     send();
   };
 
-  recognition.onend=()=>{
-    isListening=false;
-  };
+  recognition.onend=()=>{isListening=false;};
 
   recognition.start();
 }
 
-// ⏹️ STOP ALL
+// STOP
 function stopAll(){
   callMode=false;
   window.speechSynthesis.cancel();
   if(recognition) recognition.stop();
 }
 
-// TYPE EFFECT (FIXED)
+// TYPE EFFECT
 function typeEffect(el,text){
-  el.innerText="";
   let i=0;
-
   function typing(){
     if(i<text.length){
-      el.innerText = text.slice(0,i+1);
+      el.innerText=text.slice(0,i+1);
       i++;
       setTimeout(typing,18);
     }
   }
-
   typing();
 }
 
-// ADD MESSAGE
+// ADD MSG
 function addMsg(text,type){
   const chat=document.getElementById("chat");
 
@@ -281,18 +318,12 @@ function addMsg(text,type){
 // SEND
 async function send(){
   const input=document.getElementById("input");
-
   if(!input.value.trim()) return;
 
   const msg=input.value;
-
   addMsg(msg,"user");
 
-  messages.push({
-    role:"user",
-    parts:[{text:msg}]
-  });
-
+  messages.push({role:"user",parts:[{text:msg}]});
   input.value="";
 
   try{
@@ -304,20 +335,11 @@ async function send(){
 
     const data=await res.json();
 
-    if(!res.ok){
-      addMsg("Something went wrong 😭","bot");
-      return;
-    }
-
     addMsg(data.reply,"bot");
 
-    messages.push({
-      role:"model",
-      parts:[{text:data.reply}]
-    });
-
+    messages.push({role:"model",parts:[{text:data.reply}]});
   }catch{
-    addMsg("Server error 😭","bot");
+    addMsg("Error 😭","bot");
   }
 }
 
