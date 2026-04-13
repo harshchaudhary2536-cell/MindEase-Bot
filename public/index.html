@@ -2,20 +2,104 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MindEase AI</title>
+<title>MindEase Neon AI ⚡</title>
 
 <style>
-body{margin:0;display:flex;font-family:sans-serif;background:#020617;color:white;}
-.sidebar{width:220px;background:#000;padding:10px;overflow:auto;}
-.chat-item{padding:8px;margin:5px 0;background:#111;cursor:pointer;border-radius:5px;}
-.main{flex:1;display:flex;flex-direction:column;}
-#chat{flex:1;overflow:auto;padding:10px;}
-.msg{padding:8px;margin:5px;border-radius:8px;max-width:70%;}
-.user{background:#334155;align-self:flex-end;}
-.bot{background:#111;}
-.input-area{display:flex;padding:10px;}
-input{flex:1;padding:10px;}
-button{padding:10px;margin-left:5px;}
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:sans-serif;
+  display:flex;
+  height:100vh;
+  background:linear-gradient(135deg,#020617,#0f172a);
+  color:white;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:230px;
+  background:#020617;
+  border-right:1px solid #00f2ff33;
+  padding:10px;
+  overflow:auto;
+}
+
+.chat-item{
+  padding:8px;
+  margin:5px 0;
+  background:#111;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.chat-item:hover{
+  box-shadow:0 0 10px #00f2ff;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* CHAT */
+#chat{
+  flex:1;
+  overflow:auto;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+}
+
+.msg{
+  padding:10px;
+  margin:5px;
+  border-radius:10px;
+  max-width:70%;
+}
+
+.user{
+  background:#334155;
+  align-self:flex-end;
+}
+
+.bot{
+  background:#020617;
+  border:1px solid #00f2ff55;
+  box-shadow:0 0 10px #00f2ff33;
+}
+
+/* INPUT */
+.input-area{
+  display:flex;
+  padding:10px;
+  gap:5px;
+  background:#020617;
+}
+
+input{
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  background:#111;
+  color:white;
+}
+
+button{
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:linear-gradient(45deg,#00f2ff,#7000ff);
+  color:white;
+  cursor:pointer;
+}
+
+button:hover{
+  box-shadow:0 0 10px #00f2ff;
+}
 </style>
 </head>
 
@@ -31,9 +115,9 @@ button{padding:10px;margin-left:5px;}
 <div id="chat"></div>
 
 <div class="input-area">
-  <input id="input" placeholder="Type or speak..." />
+  <input id="input" placeholder="Talk to me..." />
   <button onclick="startVoice()">🎤</button>
-  <button onclick="send()">Send</button>
+  <button onclick="send()">➤</button>
 </div>
 
 </div>
@@ -45,23 +129,23 @@ let recognition;
 
 // HISTORY
 function loadHistory(){
-  const history = document.getElementById("history");
-  history.innerHTML = "";
+  const history=document.getElementById("history");
+  history.innerHTML="";
 
-  chats.forEach((chat, index) => {
-    const div = document.createElement("div");
-    div.className = "chat-item";
-    div.innerText = chat.title || "Chat " + (index+1);
-    div.onclick = () => loadChat(index);
+  chats.forEach((chat,index)=>{
+    const div=document.createElement("div");
+    div.className="chat-item";
+    div.innerText=chat.title||"Chat "+(index+1);
+    div.onclick=()=>loadChat(index);
     history.appendChild(div);
   });
 }
 
 // NEW CHAT
 function newChat(){
-  const chat = { title:"New Chat", messages:[] };
+  const chat={title:"New Chat",messages:[]};
   chats.push(chat);
-  currentChat = chats.length - 1;
+  currentChat=chats.length-1;
   save();
   renderChat();
   loadHistory();
@@ -69,54 +153,54 @@ function newChat(){
 
 // LOAD CHAT
 function loadChat(index){
-  currentChat = index;
+  currentChat=index;
   renderChat();
 }
 
 // SAVE
 function save(){
-  localStorage.setItem("chats", JSON.stringify(chats));
+  localStorage.setItem("chats",JSON.stringify(chats));
 }
 
 // RENDER
 function renderChat(){
-  const chatDiv = document.getElementById("chat");
-  chatDiv.innerHTML = "";
+  const chatDiv=document.getElementById("chat");
+  chatDiv.innerHTML="";
 
-  if(currentChat === null) return;
+  if(currentChat===null) return;
 
   chats[currentChat].messages.forEach(m=>{
-    addMsg(m.parts[0].text, m.role==="user"?"user":"bot");
+    addMsg(m.parts[0].text,m.role==="user"?"user":"bot");
   });
 }
 
 // ADD MESSAGE
 function addMsg(text,type){
-  const chat = document.getElementById("chat");
-  const div = document.createElement("div");
-  div.className = "msg " + type;
-  div.innerText = text;
+  const chat=document.getElementById("chat");
+  const div=document.createElement("div");
+  div.className="msg "+type;
+  div.innerText=text;
   chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+  chat.scrollTop=chat.scrollHeight;
 
   if(type==="bot") speak(text);
 }
 
-// VOICE OUTPUT
+// SPEAK
 function speak(text){
-  const speech = new SpeechSynthesisUtterance(text);
-  speech.lang = "en-IN";
+  const speech=new SpeechSynthesisUtterance(text);
+  speech.lang="en-IN";
   window.speechSynthesis.speak(speech);
 }
 
 // VOICE INPUT
 function startVoice(){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SR();
-  recognition.lang = "en-IN";
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.lang="en-IN";
 
-  recognition.onresult = e=>{
-    document.getElementById("input").value = e.results[0][0].transcript;
+  recognition.onresult=e=>{
+    document.getElementById("input").value=e.results[0][0].transcript;
     send();
   };
 
@@ -125,10 +209,10 @@ function startVoice(){
 
 // SEND
 async function send(){
-  const input = document.getElementById("input");
+  const input=document.getElementById("input");
   if(!input.value.trim()) return;
 
-  const msg = input.value;
+  const msg=input.value;
   addMsg(msg,"user");
 
   chats[currentChat].messages.push({
@@ -139,15 +223,13 @@ async function send(){
   input.value="";
   save();
 
-  const res = await fetch("/api/chat",{
+  const res=await fetch("/api/chat",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({
-      messages: chats[currentChat].messages
-    })
+    body:JSON.stringify({messages:chats[currentChat].messages})
   });
 
-  const data = await res.json();
+  const data=await res.json();
 
   addMsg(data.reply,"bot");
 
