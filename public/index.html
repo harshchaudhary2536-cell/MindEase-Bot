@@ -142,10 +142,13 @@ button{
 <button id="menuBtn" onclick="toggleMenu()">☰</button>
 
 <div class="sidebar">
-  <h2>MindEase ⚡</h2>
-  <button onclick="setMode('chill')">😌 Chill</button>
-  <button onclick="setMode('funny')">😂 Funny</button>
-  <button onclick="setMode('savage')">😈 Savage</button>
+  <h2 id="title">MindEase ⚡</h2>
+
+  <button id="chillBtn" onclick="setMode('chill')">😌 Chill</button>
+  <button id="funnyBtn" onclick="setMode('funny')">😂 Funny</button>
+  <button id="savageBtn" onclick="setMode('savage')">😈 Savage</button>
+
+  <button onclick="toggleLang()">🌐 Language</button>
 </div>
 
 <div class="main">
@@ -157,7 +160,7 @@ button{
 </div>
 
 <div class="input-area">
-  <input id="input" placeholder="Bol ya likh..." />
+  <input id="input" placeholder="Type or speak..." />
   <button onclick="startVoice()">🎤</button>
   <button onclick="stopVoice()">⏹️</button>
   <button onclick="send()">➤</button>
@@ -170,6 +173,7 @@ let messages=[];
 let mode="chill";
 let recognition;
 let isListening=false;
+let currentLang="en";
 
 // MENU
 function toggleMenu(){
@@ -178,18 +182,40 @@ function toggleMenu(){
 
 function setMode(m){mode=m;}
 
-// SPEAK (FIXED)
+// 🌐 LANGUAGE SWITCH
+function toggleLang(){
+  currentLang = currentLang === "en" ? "hi" : "en";
+  applyLang();
+}
+
+function applyLang(){
+
+  if(currentLang === "hi"){
+    document.getElementById("title").innerText="MindEase ⚡";
+    document.getElementById("input").placeholder="Yahan likho ya bolo...";
+    document.getElementById("chillBtn").innerText="😌 Shaant";
+    document.getElementById("funnyBtn").innerText="😂 Mazaak";
+    document.getElementById("savageBtn").innerText="😈 Teekha";
+  } else {
+    document.getElementById("title").innerText="MindEase ⚡";
+    document.getElementById("input").placeholder="Type or speak...";
+    document.getElementById("chillBtn").innerText="😌 Chill";
+    document.getElementById("funnyBtn").innerText="😂 Funny";
+    document.getElementById("savageBtn").innerText="😈 Savage";
+  }
+}
+
+applyLang();
+
+// SPEAK
 function speak(text){
   window.speechSynthesis.cancel();
-
   const speech=new SpeechSynthesisUtterance(text);
   speech.lang="en-IN";
-  speech.rate=1;
-
   window.speechSynthesis.speak(speech);
 }
 
-// VOICE INPUT (FIXED)
+// VOICE INPUT
 function startVoice(){
   if(isListening) return;
 
@@ -205,10 +231,7 @@ function startVoice(){
     send();
   };
 
-  recognition.onend=()=>{
-    isListening=false;
-  };
-
+  recognition.onend=()=>{isListening=false;};
   recognition.start();
 }
 
@@ -222,17 +245,18 @@ function typeEffect(el,text){
   el.innerText="";
   let i=0;
 
-  const interval=setInterval(()=>{
-    el.innerText+=text[i];
-    i++;
-
-    if(i>=text.length){
-      clearInterval(interval);
+  function typing(){
+    if(i<text.length){
+      el.innerText = text.slice(0,i+1);
+      i++;
+      setTimeout(typing,18);
     }
-  },20);
+  }
+
+  typing();
 }
 
-// ADD MESSAGE (FIXED)
+// ADD MSG
 function addMsg(text,type){
   const chat=document.getElementById("chat");
 
@@ -245,12 +269,12 @@ function addMsg(text,type){
   if(type==="bot"){
     typeEffect(div,text);
     setTimeout(()=>speak(text),100);
-  }else{
+  } else {
     div.innerText=text;
   }
 }
 
-// SEND (FIXED)
+// SEND
 async function send(){
   const input=document.getElementById("input");
 
