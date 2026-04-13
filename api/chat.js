@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "GROQ KEY NOT FOUND" });
     }
 
-    const { messages } = req.body;
+    const { messages, mode } = req.body;
 
     const userText =
       messages?.[messages.length - 1]?.parts?.[0]?.text || "Hello";
@@ -22,11 +22,37 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile", // ✅ FINAL MODEL
+        model: "llama-3.3-70b-versatile",
         messages: [
           {
             role: "system",
-            content: "You are MindEase, a funny chill best friend. Keep replies short, casual and supportive."
+            content: `
+You are MindEase — an emotionally intelligent AI best friend.
+
+STEP 1: Detect emotion (sad, angry, stressed, overthinking, normal)
+
+STEP 2: Respond:
+
+IF SAD → comfort deeply  
+IF ANGRY → calm + validate  
+IF STRESSED → simplify + relax  
+IF OVERTHINKING → ground gently  
+IF NORMAL → chill friend talk  
+
+MODE:
+${mode === "savage" ? "- Be funny + slightly savage 😈" : ""}
+${mode === "funny" ? "- Be playful and humorous 😂" : ""}
+${mode === "chill" ? "- Be calm and comforting 😌" : ""}
+
+RULES:
+- Talk like real friend
+- Short replies
+- Casual tone
+- No robotic talk
+- No long lectures
+
+Make user feel better after reply.
+`
           },
           {
             role: "user",
@@ -47,13 +73,12 @@ export default async function handler(req, res) {
     const reply = data.choices?.[0]?.message?.content;
 
     return res.status(200).json({
-      reply: reply || "No response 😭"
+      reply: reply || "I'm here bro 🤍"
     });
 
   } catch (err) {
     return res.status(500).json({
-      error: "SERVER ERROR",
-      details: err.message
+      error: err.message
     });
   }
 }
