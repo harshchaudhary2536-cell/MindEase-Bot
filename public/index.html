@@ -97,7 +97,6 @@ input {
   <button onclick="setMode('chill')">😌 Chill</button>
   <button onclick="setMode('funny')">😂 Funny</button>
   <button onclick="setMode('savage')">😈 Savage</button>
-  <button onclick="startVoice()">🎤 Speak</button>
 </div>
 
 <div class="main">
@@ -108,6 +107,8 @@ input {
 
 <div class="input-area">
   <input id="input" placeholder="Talk to me..." />
+  <button onclick="startVoice()">🎤</button>
+  <button onclick="stopVoice()">⏹️</button>
   <button onclick="send()">➤</button>
 </div>
 
@@ -117,34 +118,80 @@ input {
 let messages = [];
 let mode = "chill";
 
+let recognition;
+let isListening = false;
+
+// MODE
 function setMode(m) {
   mode = m;
   alert("Mode: " + m);
 }
 
+// SPEECH
 function speak(text) {
+  window.speechSynthesis.cancel();
+
   const speech = new SpeechSynthesisUtterance(text);
-  speech.rate = 1;
   speech.lang = "en-US";
+  speech.rate = 1;
+
   window.speechSynthesis.speak(speech);
 }
 
+// STOP
+function stopVoice() {
+  window.speechSynthesis.cancel();
+
+  if (recognition && isListening) {
+    recognition.stop();
+    isListening = false;
+  }
+}
+
+// ADD MESSAGE
 function addMsg(text, type) {
   const chat = document.getElementById("chat");
+
   const div = document.createElement("div");
   div.className = "msg " + type;
   div.innerText = text;
+
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 
-  if(type === "bot") speak(text);
+  if (type === "bot") speak(text);
 }
 
+// VOICE INPUT
+function startVoice() {
+  if (isListening) return;
+
+  recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = "en-US";
+
+  isListening = true;
+
+  recognition.onresult = (e) => {
+    const text = e.results[0][0].transcript;
+    document.getElementById("input").value = text;
+    send();
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+  };
+
+  recognition.start();
+}
+
+// SEND
 async function send() {
   const input = document.getElementById("input");
+
   if (!input.value.trim()) return;
 
   const msg = input.value;
+
   addMsg(msg, "user");
 
   messages.push({
@@ -175,18 +222,7 @@ async function send() {
   }
 }
 
-function startVoice() {
-  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.lang = "en-US";
-
-  recognition.onresult = function(e) {
-    document.getElementById("input").value = e.results[0][0].transcript;
-    send();
-  };
-
-  recognition.start();
-}
-
+// ENTER SEND
 document.getElementById("input").addEventListener("keypress", e=>{
   if(e.key==="Enter") send();
 });
